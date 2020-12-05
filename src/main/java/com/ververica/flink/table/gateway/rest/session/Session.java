@@ -39,6 +39,7 @@ import org.apache.calcite.rel.metadata.RelMetadataQuery;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Collections;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
@@ -78,12 +79,13 @@ public class Session {
 		return context;
 	}
 
-	public Tuple2<ResultSet, SqlCommandParser.SqlCommand> runStatement(String statement) {
-		// TODO: This is a temporary fix to avoid NPE.
-		//  In SQL gateway, TableEnvironment is created and used by different threads, thus causing this problem.
-		RelMetadataQuery.THREAD_PROVIDERS
-			.set(JaninoRelMetadataProvider.of(FlinkDefaultRelMetadataProvider.INSTANCE()));
+	public Tuple2<ResultSet, SqlCommandParser.SqlCommand> runStatement(String statement){
+		return this.runStatement(statement, Collections.emptyMap());
+	}
 
+	public Tuple2<ResultSet, SqlCommandParser.SqlCommand> runStatement(String statement, Map<String, String> operationConf) {
+		RelMetadataQuery.THREAD_PROVIDERS
+				.set(JaninoRelMetadataProvider.of(FlinkDefaultRelMetadataProvider.INSTANCE()));
 		LOG.info("Session: {}, run statement: {}", sessionId, statement);
 		boolean isBlinkPlanner = context.getExecutionContext().getEnvironment().getExecution().getPlanner()
 			.equalsIgnoreCase(ExecutionEntry.EXECUTION_PLANNER_VALUE_BLINK);
@@ -102,7 +104,7 @@ public class Session {
 			throw new SqlGatewayException(e.getMessage(), e.getCause());
 		}
 
-		Operation operation = OperationFactory.createOperation(call, context);
+		Operation operation = OperationFactory.createOperation(call, context, operationConf);
 		ResultSet resultSet = operation.execute();
 
 		if (operation instanceof JobOperation) {
