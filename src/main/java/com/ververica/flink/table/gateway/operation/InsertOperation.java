@@ -73,13 +73,7 @@ public class InsertOperation extends AbstractJobOperation {
 
 	@Override
 	public ResultSet execute() {
-		jobId = doAsOwner(() -> executeUpdateInternal(context.getExecutionContext()));
-		String strJobId = jobId.toString();
-		return ResultSet.builder()
-			.resultKind(ResultKind.SUCCESS_WITH_CONTENT)
-			.columns(ColumnInfo.create(ConstantNames.JOB_ID, new VarCharType(false, strJobId.length())))
-			.data(Row.of(strJobId))
-			.build();
+		return doAsOwner(() -> executeUpdateInternal(context.getExecutionContext()));
 	}
 
 	@Override
@@ -121,7 +115,7 @@ public class InsertOperation extends AbstractJobOperation {
 		});
 	}
 
-	private <C> JobID executeUpdateInternal(ExecutionContext<C> executionContext) {
+	private <C> ResultSet executeUpdateInternal(ExecutionContext<C> executionContext) {
 		TableEnvironment tableEnv = executionContext.getTableEnvironment();
 		// parse and validate statement
 		try {
@@ -169,7 +163,11 @@ public class InsertOperation extends AbstractJobOperation {
 			if (LOG.isDebugEnabled()) {
 				LOG.debug("Cluster Descriptor Adapter: {}", clusterDescriptorAdapter);
 			}
-			return jobID;
+			Object clusterID = clusterDescriptorAdapter.getClusterID();
+			String clusterIDStr = String.valueOf(clusterID);
+			String jobIDStr = jobID.toString();
+			return ResultSet.builder().resultKind(ResultKind.SUCCESS_WITH_CONTENT).columns(ColumnInfo.create(ConstantNames.CLUSTER_ID, new VarCharType(false, clusterIDStr.length())), ColumnInfo.create(ConstantNames.CLUSTER_ID, new VarCharType(false, jobIDStr.length())))
+					.data(Row.of(clusterIDStr), Row.of(jobIDStr)).build();
 		} catch (Exception e) {
 			throw new RuntimeException("Error running SQL job.", e);
 		}

@@ -24,6 +24,8 @@ package com.ververica.flink.table.gateway.rest.result;
 public class ConstantNames {
 
 	// for statement execution
+	public static final String CLUSTER_ID = "cluster_id";
+	// for statement execution
 	public static final String JOB_ID = "job_id";
 
 	// for results with SUCCESS result kind

@@ -140,6 +140,10 @@ public abstract class ClusterDescriptorAdapter<ClusterID> {
 		}
 	}
 
+	public ClusterID getClusterID(){
+		return clusterID;
+	}
+
 	@Override
 	public String toString() {
 		return "ClusterDescriptorAdapter{" +

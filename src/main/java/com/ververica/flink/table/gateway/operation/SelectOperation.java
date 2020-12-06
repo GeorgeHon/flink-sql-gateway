@@ -94,11 +94,12 @@ public class SelectOperation extends AbstractJobOperation {
 		for (TableColumn column : resultSchemaColumns) {
 			columnInfos.add(ColumnInfo.create(column.getName(), column.getType().getLogicalType()));
 		}
-
+		Object clusterID = clusterDescriptorAdapter.getClusterID();
+		String clusterIDStr = String.valueOf(clusterID);
 		return ResultSet.builder()
 			.resultKind(ResultKind.SUCCESS_WITH_CONTENT)
-			.columns(ColumnInfo.create(ConstantNames.JOB_ID, new VarCharType(false, jobId.toString().length())))
-			.data(Row.of(jobId.toString()))
+			.columns(ColumnInfo.create(ConstantNames.CLUSTER_ID, new VarCharType(false, clusterIDStr.length())), ColumnInfo.create(ConstantNames.JOB_ID, new VarCharType(false, jobId.toString().length())))
+			.data(Row.of(clusterIDStr), Row.of(jobId.toString()))
 			.build();
 	}
 
